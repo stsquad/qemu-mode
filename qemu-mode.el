@@ -59,11 +59,23 @@
 (defvar qemu-prompt-regexp "^(qemu)"
     "Prompt for `run-qemu'.")
 
+(defconst qemu-monitor-keywords
+  '("system_powerup" "system_powerdown" "system_reset"))
+
+(defvar qemu-font-lock-keywords
+  (list
+   ;; highlight all the reserved commands.
+   `(,(concat "\\_<" (regexp-opt qemu-monitor-keywords) "\\_>") . font-lock-keyword-face))
+    "Additional expressions to highlight in `qemu-mode'.")
+
 ;; Functions
 
 (defun qemu--arguments ()
   "Return the QEMU arguments."
-  '("--monitor" "stdio"))
+  (list
+   "-kernel" qemu-kernel-image
+   "-initrd" qemu-rootfs-image
+   "--monitor" "stdio"))
 
 (defun run-qemu ()
   "Run an inferior instance of `qemu-cli' inside Emacs."
@@ -80,7 +92,7 @@
     ;; create the comint process if there is no buffer.
     (unless buffer
       (apply 'make-comint-in-buffer "QEMU" buffer
-             qemu-program (qemu--arguments))
+             qemu-program nil (qemu--arguments))
             (qemu-mode))))
 
 ;; Mode boiler plate
